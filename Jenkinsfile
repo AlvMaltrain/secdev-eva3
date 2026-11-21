@@ -53,17 +53,23 @@ pipeline {
     stage('DAST ZAP baseline') {
       steps {
         sh '''docker rm -f zap || true
-        docker run --name zap --network secnet zaproxy/zap-stable \
-          zap-baseline.py -t "http://$APP:5000/hello?name=test" -r zap-baseline.html -I || true
-        docker cp zap:/zap/wrk/zap-baseline.html . || true
+        docker volume rm -f zap-wrk || true
+        docker volume create zap-wrk
+        docker run --name zap --user root --network secnet -v zap-wrk:/zap/wrk \
+          zaproxy/zap-stable zap-baseline.py \
+          -t "http://$APP:5000/hello?name=test" -r zap-baseline.html -I || true
+        docker cp zap:/zap/wrk/zap-baseline.html .
         docker rm -f zap'''
       }
     }
     stage('DAST ZAP full (activo)') {
       steps {
-        sh '''docker run --name zap --network secnet zaproxy/zap-stable \
-          zap-full-scan.py -t "http://$APP:5000/hello?name=test" -m 3 -r zap-full.html -I || true
-        docker cp zap:/zap/wrk/zap-full.html . || true
+        sh '''docker volume rm -f zap-wrk || true
+        docker volume create zap-wrk
+        docker run --name zap --user root --network secnet -v zap-wrk:/zap/wrk \
+          zaproxy/zap-stable zap-full-scan.py \
+          -t "http://$APP:5000/hello?name=test" -m 3 -r zap-full.html -I || true
+        docker cp zap:/zap/wrk/zap-full.html .
         docker rm -f zap'''
       }
     }
