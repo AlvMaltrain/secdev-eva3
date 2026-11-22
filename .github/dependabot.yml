@@ -1,0 +1,16 @@
+version: 2
+updates:
+  # Dependencias Python de la app
+  - package-ecosystem: "pip"
+    directory: "/app"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels: ["dependencies", "security"]
+
+  # Imagen base del contenedor de la app
+  - package-ecosystem: "docker"
+    directory: "/app"
+    schedule:
+      interval: "weekly"
+    labels: ["dependencies", "security"]
